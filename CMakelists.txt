@@ -1,0 +1,77 @@
+cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
+project(display-image)
+
+enable_language(C CXX)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_C_STANDARD 17)
+
+set(PROJ_NAME "hw2")
+set(PROJ_PATH ${CMAKE_SOURCE_DIR})
+set(OPENCV_MAIN_DIR "C:/opencv/")
+
+if(NOT WIN32)
+    find_package(OpenCV REQUIRED)
+    message(STATUS "Found OpenCV in system!")
+elseif(WIN32)
+    message(STATUS "Trying to find OpenCV in \"${OPENCV_MAIN_DIR}\"")
+    include_directories(${OPENCV_MAIN_DIR}opencv/build/x64/vc16/lib)
+    set(OpenCV_INCLUDE_DIRS ${OPENCV_MAIN_DIR}opencv/build/include)
+    set(OpenCV_LIBS ${OPENCV_MAIN_DIR}opencv/build/x64/vc16/lib/opencv_world480.lib
+                    ${OPENCV_MAIN_DIR}opencv/build/x64/vc16/lib/opencv_world480d.lib)
+    message(STATUS "Using the default OpenCV include directories!")
+endif()
+
+
+string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
+add_definitions("-DSOURCE_PATH_SIZE=${SOURCE_PATH_SIZE}")
+
+# if(WIN32)
+#     add_subdirectory(${PROJ_PATH}/lib/opencv/sources/)
+# endif(WIN32)
+
+add_executable(${PROJ_NAME}
+    ${PROJ_PATH}/src/main.cpp
+    ${PROJ_PATH}/src/processing.cpp
+    ${PROJ_PATH}/lib/simple-c-logging/logs.c 
+)
+
+
+target_include_directories(${PROJ_NAME} PRIVATE
+    ${OpenCV_INCLUDE_DIRS}
+    ${PROJ_PATH}/inc
+    ${PROJ_PATH}/lib/simple-c-logging
+)
+
+set(${COMPILE_OPTIONS}
+    -Wall 
+if(NOT MSVC)
+    -Wextra
+    # -Wpedantic
+    # -fanalyzer
+    -Wno-unused-parameter
+    -fshort-enums
+    -finline-functions
+    -g3 -ggdb
+elseif(MSVC)
+    -Zi
+endif()
+    -O2
+)
+
+target_compile_options(${PROJ_NAME} PRIVATE ${COMPILE_OPTIONS})
+target_link_libraries(${PROJ_NAME} ${OpenCV_LIBS} )
+
+if(WIN32)
+    add_custom_command(TARGET ${PROJ_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+        ${OPENCV_MAIN_DIR}opencv/build/x64/vc16/bin/opencv_world480.dll
+        ${PROJ_PATH}/build/opencv_world480.dll
+    )
+
+    add_custom_command(TARGET ${PROJ_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+        ${OPENCV_MAIN_DIR}opencv/build/x64/vc16/bin/opencv_world480d.dll
+        ${PROJ_PATH}/build/opencv_world480d.dll
+    )
+endif()
+

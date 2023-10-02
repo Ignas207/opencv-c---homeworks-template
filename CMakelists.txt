@@ -1,33 +1,29 @@
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
-project(display-image)
+project(opencv-process)
 
 enable_language(C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 17)
 
-set(PROJ_NAME "hw2")
+set(PROJ_NAME "process")
 set(PROJ_PATH ${CMAKE_SOURCE_DIR})
-set(OPENCV_MAIN_DIR "C:/opencv/")
+set(OPENCV_MAIN_DIR "C:/opencv")
 
 if(NOT WIN32)
     find_package(OpenCV REQUIRED)
     message(STATUS "Found OpenCV in system!")
 elseif(WIN32)
-    message(STATUS "Trying to find OpenCV in \"${OPENCV_MAIN_DIR}\"")
-    include_directories(${OPENCV_MAIN_DIR}opencv/build/x64/vc16/lib)
-    set(OpenCV_INCLUDE_DIRS ${OPENCV_MAIN_DIR}opencv/build/include)
-    set(OpenCV_LIBS ${OPENCV_MAIN_DIR}opencv/build/x64/vc16/lib/opencv_world480.lib
-                    ${OPENCV_MAIN_DIR}opencv/build/x64/vc16/lib/opencv_world480d.lib)
-    message(STATUS "Using the default OpenCV include directories!")
-endif()
+    message(STATUS "Trying to add OpenCV in \"${OPENCV_MAIN_DIR}\"")
 
+    set(OpenCV_DIR ${OPENCV_MAIN_DIR}/build/x64/vc16/lib)
+    FIND_PACKAGE(OpenCV REQUIRED)
+
+    set(OpenCV_LIB_VERSION ${OpenCV_VERSION_MAJOR}${OpenCV_VERSION_MINOR}${OpenCV_VERSION_PATCH})
+endif()
 
 string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
 add_definitions("-DSOURCE_PATH_SIZE=${SOURCE_PATH_SIZE}")
 
-# if(WIN32)
-#     add_subdirectory(${PROJ_PATH}/lib/opencv/sources/)
-# endif(WIN32)
 
 add_executable(${PROJ_NAME}
     ${PROJ_PATH}/src/main.cpp
@@ -45,6 +41,7 @@ target_include_directories(${PROJ_NAME} PRIVATE
 set(${COMPILE_OPTIONS}
     -Wall 
 if(NOT MSVC)
+    # -Wno-string-plus-int
     -Wextra
     # -Wpedantic
     # -fanalyzer
@@ -64,14 +61,20 @@ target_link_libraries(${PROJ_NAME} ${OpenCV_LIBS} )
 if(WIN32)
     add_custom_command(TARGET ${PROJ_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy
-        ${OPENCV_MAIN_DIR}opencv/build/x64/vc16/bin/opencv_world480.dll
-        ${PROJ_PATH}/build/opencv_world480.dll
+        ${OPENCV_MAIN_DIR}/build/x64/vc16/bin/opencv_world${OpenCV_LIB_VERSION}.dll
+        ${PROJ_PATH}/build/opencv_world${OpenCV_LIB_VERSION}.dll
     )
 
     add_custom_command(TARGET ${PROJ_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy
-        ${OPENCV_MAIN_DIR}opencv/build/x64/vc16/bin/opencv_world480d.dll
-        ${PROJ_PATH}/build/opencv_world480d.dll
+        ${OPENCV_MAIN_DIR}/build/x64/vc16/bin/opencv_world${OpenCV_LIB_VERSION}d.dll
+        ${PROJ_PATH}/build/opencv_world${OpenCV_LIB_VERSION}d.dll
+    )
+
+    add_custom_command(TARGET ${PROJ_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+        ${OPENCV_MAIN_DIR}/build/bin/opencv_videoio_ffmpeg${OpenCV_LIB_VERSION}_64.dll
+        ${PROJ_PATH}/build/opencv_videoio_ffmpeg${OpenCV_LIB_VERSION}_64.dll
     )
 endif()
 

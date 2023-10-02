@@ -13,5 +13,6 @@ typedef enum
 } PROCESS_STATUS_t;
 
 PROCESS_STATUS_t ProcessVideo(cv::VideoCapture &video);
+PROCESS_STATUS_t ProcessImage(cv::Mat &image);
 
 #endif

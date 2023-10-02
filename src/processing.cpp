@@ -1,6 +1,6 @@
 #include "processing.h"
 
-static uint8_t IsProcessingCanceled();
+static uint8_t IsProcessingCanceled(int delay);
 
 /**
  * @brief Sends the video stream to our algorithm.
@@ -28,11 +28,23 @@ PROCESS_STATUS_t ProcessVideo(cv::VideoCapture &video)
 
         cv::imshow("Raw frame", frame);
 
+        // TODO: Place your implementation here!
         // HW1_ExtractCubes(frame);
 
-        if(IsProcessingCanceled())
+        if(IsProcessingCanceled(25))
             break;
     }
+    return PROCESS_OK;
+}
+
+PROCESS_STATUS_t ProcessImage(cv::Mat &image)
+{
+    cv::imshow("Raw image", image);
+
+    // TODO: Place your implementation here!
+
+    IsProcessingCanceled(0);
+
     return PROCESS_OK;
 }
 
@@ -42,9 +54,9 @@ PROCESS_STATUS_t ProcessVideo(cv::VideoCapture &video)
  * 
  * @return uint8_t: 1 if requested.
  */
-static uint8_t IsProcessingCanceled()
+static uint8_t IsProcessingCanceled(int delay)
 {
-    char c = (char)cv::waitKey(25);
+    char c = (char)cv::waitKey(delay);
     if(c == PROCESSING_ESC_KEY)
     {
         return 1;
